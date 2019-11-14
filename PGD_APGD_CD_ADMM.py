@@ -19,6 +19,7 @@ import time
 #Solution Vector Size
 p = 100 #sys.argv[1] 
 n = 100
+# lambda是用这个方式估计出来的
 lambd = np.sqrt(2*n*np.log(p))
 
 
@@ -37,10 +38,9 @@ for i in range(len(A)):
 		A[i,j] = np.random.normal(0,1)
 
 
-
 b = np.dot(A,x) + eta
 
-
+# 计算样本矩阵和预测矩阵的RSME误差
 def calculateRSME(sampleMatrix, predictionMatrix):
 	sum = 0
 	m = len(sampleMatrix)
@@ -50,17 +50,19 @@ def calculateRSME(sampleMatrix, predictionMatrix):
 
 # Proximal Gradien Descent
 
+# 计算x的L2范数
 def L2_Norm(x):
 	return np.sqrt(sum(abs(x)**2))
 #print L2_Norm(np.dot(np.transpose(A),A))
 
+# gamma是(A^T)A的2-范数的倒数（这个是用来干嘛的？）
 gamma = 1/np.linalg.norm(np.dot(np.transpose(A),A))
 
-
+# 目标函数(1/2)*||AX-b||^2 + lambda*||X||.{1}
 def ObjectiveFunction(X,A,b, lambd):
 	return .5 * np.linalg.norm(np.dot(A,X) - b)**2 + lambd*np.linalg.norm(X,ord = 1)
 
-
+# 软阈值算子
 def SoftThresholdingOperator(B,lambd,gamma):
 	S = np.copy(B)
 	# if len(B) == 1:
@@ -85,13 +87,13 @@ def SoftThresholdingOperator(B,lambd,gamma):
 # 	print b[i]
 # 	print T[i]
 
-
+# 迭代指示k和迭代上限K
 k = 0
-K = 10000
+K = 300
 
 
 ########################################################################
-#Proximal Gradient Descent
+#Proximal Gradient Descent（近端梯度下降）
 ########################################################################
 
 start = time.time()
@@ -100,6 +102,11 @@ start = time.time()
 # for Decreasing step
 print("########################################################################")
 print("########################################################################")
+# 初始化变量
+# alpha是
+# t是
+# X是
+# PGD_Plot是用来记录每次的目标函数值的
 alpha = .4
 t = 1
 # print "lambda: ", lambd
@@ -108,12 +115,15 @@ X =  np.zeros(p)#np.random.normal(0,1,p)# # Zero better
 PGD_Plot=[]
 while k < K:
 	#t = t * alpha
-	PGD_Plot.append(ObjectiveFunction(X,A,b,lambd))
+	PGD_Plot.append(ObjectiveFunction(X,A,b,lambd)) # 记录目标函数值
 	X = SoftThresholdingOperator(X + 
 		gamma*np.dot(np.transpose(A),(b-np.dot(A,X))),lambd,gamma)
 	k = k + 1
 	
-print "PGD RSME: ", calculateRSME(X,x)
+print("PGD RSME: ", calculateRSME(X,x))
+
+
+plt.plot(range(0,len(PGD_Plot)), PGD_Plot)
 
 # for i in range(len(x)):
 # 	print abs(X[i] - x[i])
@@ -162,7 +172,10 @@ while k < K-1:
 		X_k2 = X_k1.copy()
 		
 		
-print "APGD RSME: ", calculateRSME(X,x)
+print("APGD RSME: ", calculateRSME(X,x))
+
+plt.plot(range(0,len(PGD_Plot)), PGD_Plot)
+plt.plot(range(0,len(APGD_Plot)), APGD_Plot)
 
 end = time.time()
 print "runtime:", end - start
